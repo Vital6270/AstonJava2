@@ -21,9 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 public class Lesson8Test {
 
-    //private WebDriver driver = new ChromeDriver();
-
-
     // 1. Проверяем название блока «Онлайн пополнение без комиссии»
     @Test
     public void testTitle() {
@@ -48,8 +45,6 @@ public class Lesson8Test {
 
         WebDriver driver = new ChromeDriver();
         driver.get("https://www.mts.by/");
-
-        //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
 
         WebElement visa = driver.findElement(By.xpath(
                 "//*[@id=\"pay-section\"]/div/div/div[2]/section/div/div[2]/ul/li[1]"));
@@ -100,7 +95,7 @@ public class Lesson8Test {
     public void testTextArea() throws InterruptedException {
 
         WebDriver driver = new ChromeDriver();
-        //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+        
         driver.get("https://www.mts.by/");
         driver.manage().window().maximize();
 
