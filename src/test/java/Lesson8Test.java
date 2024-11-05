@@ -10,10 +10,15 @@
 */
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import java.time.Duration;
 
@@ -21,47 +26,49 @@ import java.time.Duration;
 
 public class Lesson8Test {
 
-    // 1. Проверяем название блока «Онлайн пополнение без комиссии»
+    private WebDriver driver;
 
-    @Test
-    public void testTitle() {
-
-        WebDriver driver = new ChromeDriver();
+    @BeforeMethod
+    public void setUp() {
+        driver = new ChromeDriver();
         driver.get("https://www.mts.by/");
+        driver.manage().window().maximize();
+    }
 
-        //driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-
-        WebElement payBox = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/h2"));
-
-        Assert.assertEquals(payBox.getText(), "Онлайн пополнение\n" +
-                "без комиссии");
-
+    @AfterMethod
+    void tearDown() {
         driver.quit();
     }
 
-    // 2. Проверяем наличие логотипов платёжных систем
+    // 1. Проверяем название блока «Онлайн пополнение без комиссии»
+    @Test
+    public void testTitle() {
 
+        WebElement payBox = driver.findElement(By.xpath(
+                "//*[@id='pay-section']//*[@class='pay__wrapper']//h2"));
+
+        Assert.assertEquals(payBox.getText(), "Онлайн пополнение\n" +
+                "без комиссии");
+    }
+
+    // 2. Проверяем наличие логотипов платёжных систем
     @Test
     public void testPayPartners() {
 
-        WebDriver driver = new ChromeDriver();
-        driver.get("https://www.mts.by/");
-
         WebElement visa = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/div[2]/ul/li[1]"));
+                "//*[@class='pay__partners']//ul/li[1]")); //не знаю, как здесь избавиться от номера [1]
 
         WebElement visaVerified = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/div[2]/ul/li[2]/img"));
+                "//*[@class='pay__partners']//ul/li[2]"));
 
         WebElement masterCard = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/div[2]/ul/li[3]/img"));
+                "//*[@class='pay__partners']//ul/li[3]"));
 
         WebElement masterCardSecureCode = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/div[2]/ul/li[4]/img"));
+                "//*[@class='pay__partners']//ul/li[4]"));
 
         WebElement belCard = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/div[2]/ul/li[5]/img"));
+                "//*[@class='pay__partners']//ul/li[5]"));
 
         Assert.assertTrue(visa.isDisplayed());
 
@@ -72,44 +79,47 @@ public class Lesson8Test {
         Assert.assertTrue(masterCardSecureCode.isDisplayed());
 
         Assert.assertTrue(belCard.isDisplayed());
-
-        driver.quit();
     }
 
     //3. Проверяем работу ссылки «Подробнее о сервисе».
-    //Если появляется окно с Cookies, то тест фейлится. Не знаю пока, как с этим бороться (добавлять if clause?)
-
     @Test
     public void testLinkIsWorking() throws InterruptedException {
 
-        WebDriver driver = new ChromeDriver();
-        driver.get("https://www.mts.by/");
+        try {
+            WebElement cookieWrapper = driver.findElement(By.className("cookie__wrapper"));
+            if (cookieWrapper.isDisplayed()) {
+                WebElement acceptCookiesButton = driver.findElement(By.id("cookie-agree"));
+                acceptCookiesButton.click();
+            }
+        } catch (NoSuchElementException e) {
+            System.out.println("Всплывающее окно с файлами cookie не появилось.");
+        }
 
         WebElement link = driver.findElement(By.xpath(
-                "//*[@id='pay-section']/div/div/div[2]/section/div/a"));
-
-        driver.manage().timeouts().implicitlyWait(Duration.ofMillis(500));
+                "//*[@id='pay-section']//div/a"));
 
         link.click();
 
-        Thread.sleep(2000);
+        new WebDriverWait(driver,Duration.ofSeconds(5)).until(ExpectedConditions.urlContains(
+                "/poryadok-oplaty-i-bezopasnost-internet-platezhey"));
 
         Assert.assertEquals(driver.getTitle(), "Порядок оплаты и безопасность интернет платежей");
-
-        driver.quit();
     }
 
     //4. Заполнить поля и проверить работу кнопки «Продолжить» (проверяем
     //только вариант «Услуги связи», номер для теста 297777777).
-    //Если появляется окно с Cookies, то тест фейлится. Не знаю пока, как с этим бороться (добавлять if clause?)
-
     @Test
-    public void testTextArea() throws InterruptedException {
+    public void testTextArea() {
 
-        WebDriver driver = new ChromeDriver();
-        
-        driver.get("https://www.mts.by/");
-        driver.manage().window().maximize();
+        try {
+            WebElement cookieWrapper = driver.findElement(By.className("cookie__wrapper"));
+            if (cookieWrapper.isDisplayed()) {
+                WebElement acceptCookiesButton = driver.findElement(By.id("cookie-agree"));
+                acceptCookiesButton.click();
+            }
+        } catch (NoSuchElementException e) {
+            System.out.println("Всплывающее окно с файлами cookie не появилось.");
+        }
 
         WebElement phoneBox = driver.findElement(By.id("connection-phone"));
         phoneBox.sendKeys("297777777");
@@ -124,17 +134,10 @@ public class Lesson8Test {
                 "//*[@id='pay-connection']/button"));
         button.click();
 
-        Thread.sleep(3000);
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebElement iframe = wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("bepaid-iframe")));
 
-        WebElement iframe = driver.findElement(By.className("bepaid-iframe"));
-
-        driver.switchTo().frame(iframe);
-
-        WebElement element = driver.findElement(By.className("ng-star-inserted"));
-
-        Assert.assertTrue(element.isDisplayed());
-
-        driver.quit();
+        Assert.assertTrue(iframe.isDisplayed());
     }
 }
 
