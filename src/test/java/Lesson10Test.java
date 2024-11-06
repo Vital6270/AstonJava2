@@ -5,144 +5,133 @@
 всех полей) и кода ответа).
 */
 
+import io.restassured.RestAssured;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
+import org.hamcrest.Matchers;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import static io.restassured.RestAssured.given;
 import static java.util.Collections.emptyMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import io.restassured.response.Response;
 import static org.hamcrest.Matchers.*;
 
-public class TestLesson10 {
+public class Lesson10Test {
+
+    private RequestSpecification requestSpec;
+    private ResponseSpecification responseSpec;
+
+    @BeforeMethod
+    public void setup() {
+
+        RestAssured.baseURI = "https://postman-echo.com";
+
+        requestSpec = RestAssured.given()
+                .log().all()
+                .header("Content-Type", "text/plain");
+
+        responseSpec = RestAssured.expect()
+                .statusCode(200)
+                .body("headers.x-forwarded-proto", Matchers.equalTo("https"))
+                .body("headers.x-forwarded-port", Matchers.equalTo("443"))
+                .body("headers.host", Matchers.equalTo("postman-echo.com"))
+                .body("headers.x-amzn-trace-id", startsWith("Root="))
+                .body("headers.user-agent", Matchers.equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
+                .body("headers.accept", Matchers.equalTo("*/*"))
+                .body("headers.accept-encoding", containsString("gzip"));
+    }
 
     @Test
     public void testGetRequest() {
 
         Response response = given()
+                .spec(requestSpec)
                 .queryParam("foo1", "bar1")
                 .queryParam("foo2", "bar2")
                 .when()
-                .get("https://postman-echo.com/get");
+                .get("/get");
 
-        response.then().statusCode(200);
-
+        response.then().spec(responseSpec);
         response.then()
                 .body("args.foo1", equalTo("bar1"))
                 .body("args.foo2", equalTo("bar2"))
-                .body("headers.x-forwarded-proto", equalTo("https"))
-                .body("headers.x-forwarded-port", equalTo("443"))
-                .body("headers.host", equalTo("postman-echo.com"))
-                .body("headers.x-amzn-trace-id", startsWith("Root="))
-                .body("headers.user-agent", equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
-                .body("headers.accept", equalTo("*/*"))
-                .body("headers.accept-encoding", containsString("gzip"));
+                .log().all();
     }
 
     @Test
     public void testPostRawText() {
 
         Response response = given()
-                .header("Content-Type", "text/plain")
                 .body("This is expected to be sent back as part of response body.")
                 .when()
-                .post("https://postman-echo.com/post");
+                .post("/post");
 
-        response.then().statusCode(200);
-
+        response.then().spec(responseSpec);
         response.then()
                 .body("args", is(emptyMap()))
                 .body("data", equalTo("This is expected to be sent back as part of response body."))
                 .body("files", is(emptyMap()))
                 .body("form", is(emptyMap()))
-                .body("headers.x-forwarded-proto", equalTo("https"))
-                .body("headers.x-forwarded-port", equalTo("443"))
-                .body("headers.host", equalTo("postman-echo.com"))
-                .body("headers.x-amzn-trace-id", startsWith("Root="))
                 .body("headers.content-length", equalTo("58"))
                 .body("headers.content-type", containsString("text/plain"))
-                .body("headers.user-agent", equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
-                .body("headers.accept", equalTo("*/*"))
-                .body("headers.accept-encoding", containsString("gzip"));
+                .log().all();
     }
 
     @Test
     public void testPutRequest() {
 
         Response response = given()
-                .header("Content-Type", "text/plain")
                 .body("This is expected to be sent back as part of response body.")
                 .when()
-                .put("https://postman-echo.com/put");
+                .put("/put");
 
-        response.then().statusCode(200);
-
+        response.then().spec(responseSpec);
         response.then()
                 .body("args", is(emptyMap()))
                 .body("data", equalTo("This is expected to be sent back as part of response body."))
                 .body("files", is(emptyMap()))
                 .body("form", is(emptyMap()))
-                .body("headers.x-forwarded-proto", equalTo("https"))
-                .body("headers.x-forwarded-port", equalTo("443"))
-                .body("headers.host", equalTo("postman-echo.com"))
-                .body("headers.x-amzn-trace-id", startsWith("Root="))
                 .body("headers.content-length", equalTo("58"))
                 .body("headers.content-type", containsString("text/plain"))
-                .body("headers.user-agent", equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
-                .body("headers.accept", equalTo("*/*"))
-                .body("headers.accept-encoding", containsString("gzip"));
+                .log().all();
     }
 
     @Test
     public void testPatchRequest() {
 
         Response response = given()
-                .header("Content-Type", "text/plain")
                 .body("This is expected to be sent back as part of response body.")
                 .when()
-                .patch("https://postman-echo.com/patch");
+                .patch("/patch");
 
-        response.then().statusCode(200);
-
+        response.then().spec(responseSpec);
         response.then()
                 .body("args", is(emptyMap()))
                 .body("data", equalTo("This is expected to be sent back as part of response body."))
                 .body("files", is(emptyMap()))
                 .body("form", is(emptyMap()))
-                .body("headers.x-forwarded-proto", equalTo("https"))
-                .body("headers.x-forwarded-port", equalTo("443"))
-                .body("headers.host", equalTo("postman-echo.com"))
-                .body("headers.x-amzn-trace-id", startsWith("Root="))
                 .body("headers.content-length", equalTo("58"))
                 .body("headers.content-type", containsString("text/plain"))
-                .body("headers.user-agent", equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
-                .body("headers.accept", equalTo("*/*"))
-                .body("headers.accept-encoding", containsString("gzip"));
+                .log().all();
     }
 
     @Test
     public void testDeleteRequest() {
 
         Response response = given()
-                .header("Content-Type","text/plain")
                 .body("This is expected to be sent back as part of response body.")
                 .when()
-                .delete("https://postman-echo.com/delete");
+                .delete("/delete");
 
-        response.then().statusCode(200);
-
+        response.then().spec(responseSpec);
         response.then()
                 .body("args", is(emptyMap()))
                 .body("data", equalTo("This is expected to be sent back as part of response body."))
                 .body("files", is(emptyMap()))
                 .body("form", is(emptyMap()))
-                .body("headers.x-forwarded-proto", equalTo("https"))
-                .body("headers.x-forwarded-port", equalTo("443"))
-                .body("headers.host", equalTo("postman-echo.com"))
-                .body("headers.x-amzn-trace-id", startsWith("Root="))
                 .body("headers.content-length", equalTo("58"))
                 .body("headers.content-type", containsString("text/plain"))
-                .body("headers.user-agent", equalTo("Apache-HttpClient/4.5.3 (Java/17.0.12)"))
-                .body("headers.accept", equalTo("*/*"))
-                .body("headers.accept-encoding", containsString("gzip"));
+                .log().all();
     }
 }
