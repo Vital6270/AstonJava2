@@ -1,0 +1,1 @@
+{"uuid":"4b1899c4-5571-4f6a-a213-57ff39ecadb1","name":"Lesson11Test.tearDown","children":["41902d24-04a7-4c43-b696-e41fbcc3d830"],"description":"","befores":[],"afters":[{"name":"tearDown","status":"passed","stage":"finished","description":"","steps":[],"attachments":[],"parameters":[],"start":1731090439343,"stop":1731090439697}],"start":1731090439343,"stop":1731090439697}
